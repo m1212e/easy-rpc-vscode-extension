@@ -1,0 +1,104 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Easy-RPC",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#literals"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "name": "entity.name.function.erpc",
+      "match": "\\b[A-Za-z0-9_]{1,}[\\s]{0,}\\("
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.erpc",
+          "match": "\\/\\/[^\\n\\r]+?(?:\\*\\)|[\n\r])"
+        },
+        {
+          "name": "comment.line.number-sign.erpc",
+          "match": "#[^\\n\\r]+?(?:\\*\\)|[\n\r])"
+        },
+        {
+          "name": "comment.block.documentation.erpc",
+          "begin": "\\/\\*\\*",
+          "end": "\\*\\/"
+        },
+        {
+          "name": "comment.block.erpc",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.erpc",
+          "match": "\\b(type|role|import)\\b"
+        },
+        {
+          "name": "storage.type.erpc",
+          "match": "\\b(boolean|int|int8|int16|int32|int64|float|float32|float64|string)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.erpc",
+          "match": "(\\||{|}|\\(|\\)|\\[|\\]|,)"
+        }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.numeric.erpc",
+          "match": "[-]{0,1}[0-9]{1,}[\\.]{0,1}[0-9]{0,}"
+        },
+        {
+          "name": "constant.language.erpc",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.erpc",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.erpc",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "entity.name.type.erpc",
+          "match": "\\b[A-Za-z0-9_]{1,}\\b"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.erpc"
+}

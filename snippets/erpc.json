@@ -1,0 +1,17 @@
+{
+  "Type": {
+    "prefix": "type",
+    "body": ["/**\n * This is a custom type\n */\ntype ${1:TypeName} {\n    ${2:fieldName} ${3:string}\n}\n$0"],
+    "description": "Create a new custom type"
+  },
+  "Endpoint": {
+    "prefix": ["function", "endpoint"],
+    "body": ["/**\n * This is an endpoint\n */\n${1:role} ${2:name}($3) ${4:returnType} \n$0"],
+    "description": "Create a new endpoint"
+  },
+  "Role": {
+    "prefix": "role",
+    "body": ["/**\n * This is a role\n */\nrole ${1:roleName} \n$0"],
+    "description": "Create a new role"
+  }
+}
