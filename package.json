@@ -1,31 +1,58 @@
 {
-    "name": "easy-rpc",
-    "displayName": "Easy-RPC",
-    "description": "Easy-RPC language support",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.64.0"
-    },
-    "categories": [
-        "Programming Languages", "Snippets"
+  "name": "easy-rpc",
+  "displayName": "Easy-RPC",
+  "description": "Easy-RPC language support",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild main.ts --bundle --platform=node --format=cjs --outdir=build --external:vscode --minify --target=node14"
+  },
+  "main": "build/main.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "Easy-RPC",
+        "aliases": [
+          "Easy-RPC",
+          "erpc"
+        ],
+        "extensions": [
+          ".erpc"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "contributes": {
-        "languages": [{
-            "id": "erpc",
-            "aliases": ["Easy-RPC", "erpc"],
-            "extensions": [".erpc"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "erpc",
-            "scopeName": "source.erpc",
-            "path": "./syntaxes/erpc.tmLanguage.json"
-        }],
-        "snippets": [
-            {
-                "language": "erpc",
-                "path": "./snippets/erpc.json"
-            }
-        ]
-    }
+    "grammars": [
+      {
+        "language": "Easy-RPC",
+        "scopeName": "source.erpc",
+        "path": "./syntaxes/erpc.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "Easy-RPC",
+        "path": "./snippets/erpc.json"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:Easy-RPC",
+    "workspaceContains:**/*.erpc"
+  ],
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "@types/vscode": "^1.65.0",
+    "esbuild": "^0.14.25"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^7.0.0"
+  }
 }

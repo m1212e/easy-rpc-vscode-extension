@@ -1,0 +1,57 @@
+import * as path from "path";
+import { ExtensionContext } from "vscode";
+
+import { LanguageClient, StreamInfo } from "vscode-languageclient/node";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+
+let client: LanguageClient;
+let p: ChildProcessWithoutNullStreams;
+
+export function activate(context: ExtensionContext) {
+  const server = context.asAbsolutePath(
+    path.join("language-server", "erpcLanguageServer.exe")
+  );
+
+  console.log(server);
+
+  client = new LanguageClient(
+    "Easy-RPC-Language-Server",
+    "Easy-RPC-Language-Server",
+    createServer(server),
+    {}
+  );
+
+  client.start();
+}
+
+export function deactivate(): Thenable<void> | undefined {
+  if (!client) {
+    return undefined;
+  }
+  p.removeAllListeners();
+  return client.stop();
+}
+
+function createServer(executeablePath: string) {
+  p = spawn(executeablePath);
+
+  const setDetatchedTrue = () => {
+    info.detached = true;
+  };
+
+  p.addListener("close", setDetatchedTrue);
+  p.addListener("error", setDetatchedTrue);
+  p.addListener("disconnect", setDetatchedTrue);
+  p.addListener("exit", setDetatchedTrue);
+
+  const info: StreamInfo = {
+    writer: p.stdin,
+    reader: p.stdout,
+  };
+
+  p.stdout.addListener("data", (data: Buffer) => {
+    console.log("out:", data.toString());
+  });
+
+  return async () => info;
+}
