@@ -50,7 +50,10 @@ function createServer(executeablePath: string) {
   };
 
   p.stdout.addListener("data", (data: Buffer) => {
-    console.log("out:", data.toString());
+    console.log("stdout:\n" + data.toString() + "\n");
+  });
+  p.stderr.addListener("data", (data: Buffer) => {
+    console.error("stderr:\n" + data.toString() + "\n");
   });
 
   return async () => info;

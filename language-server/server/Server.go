@@ -2,6 +2,7 @@ package server
 
 import (
 	"erpcLanguageServer/server/jsonrpc"
+	"log"
 	"os"
 	"sync"
 )
@@ -18,6 +19,7 @@ type Server struct {
 
 func NewServer() *Server {
 	s := &Server{}
+	s.methods = make(map[string]func(request jsonrpc.Request) jsonrpc.Response)
 	return s
 }
 
@@ -25,14 +27,14 @@ func (server *Server) Run() {
 	server.registerDefaultMethods()
 
 	server.reader = jsonrpc.NewReader(os.Stdin)
-	server.writer = jsonrpc.NewWriter(os.Stdin)
+	server.writer = jsonrpc.NewWriter(os.Stdout)
 	server.requests = make(chan jsonrpc.Request, 5)
 	server.responses = make(chan jsonrpc.Response, 5)
 
 	server.wg.Add(3)
 	go server.readerLoop()
-	go server.writerLoop()
 	go server.handlerLoop()
+	go server.writerLoop()
 	server.wg.Wait()
 }
 
@@ -47,7 +49,7 @@ func (server *Server) readerLoop() {
 		if err != nil {
 			server.responses <- err.ToErrorResponse(nil)
 		}
-
+		log.Println("Recieved request:", request.Method, "with ID:", request.ID)
 		server.requests <- request
 	}
 
@@ -64,14 +66,17 @@ func (server *Server) writerLoop() {
 
 		// dont send notification answers
 		if response.ID == nil {
+			log.Println("Notification recieved.")
 			continue
 		}
 
 		response.Jsonrpc = "2.0"
-
 		if err := server.writer.Write(response); err != nil {
-			server.responses <- err.ToErrorResponse(nil)
+			log.Println("Errored response with ID:", response.ID)
+			server.responses <- err.ToErrorResponse(response.ID)
+			continue
 		}
+		log.Println("Sent response with ID:", response.ID)
 	}
 
 	server.wg.Done()
@@ -83,18 +88,15 @@ func (server *Server) handlerLoop() {
 			break
 		}
 		request := <-server.requests
-		server.responses <- server.handleIncomingMethod(request)
+		f, ok := server.methods[request.Method]
+		if !ok {
+			server.responses <- jsonrpc.NewMethodNotFoundError("could not find the method "+request.Method, nil).ToErrorResponse(request.ID)
+			continue
+		}
+
+		server.responses <- f(request)
 	}
 	server.wg.Done()
-}
-
-func (server *Server) handleIncomingMethod(request jsonrpc.Request) jsonrpc.Response {
-	f, ok := server.methods[request.Method]
-	if !ok {
-		return jsonrpc.NewMethodNotFoundError("could not find the method "+request.Method, nil).ToErrorResponse(request.ID)
-	}
-
-	return f(request)
 }
 
 func (server *Server) Shutdown() {

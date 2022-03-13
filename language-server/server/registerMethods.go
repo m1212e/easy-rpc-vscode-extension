@@ -6,6 +6,9 @@ import (
 	"erpcLanguageServer/server/methods/initialize"
 )
 
+/*
+	Registers a callback to be executed when the initialize method gets called by the client. Overwrites the default fallback.
+*/
 func (server *Server) OnInitialize(c func(params initialize.Parameters) (initialize.Response, *jsonrpc.JSONRPCError)) {
 	server.methods[initialize.Identifier()] = func(request jsonrpc.Request) jsonrpc.Response {
 		var p initialize.Parameters
