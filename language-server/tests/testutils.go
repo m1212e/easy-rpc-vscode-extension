@@ -1,9 +1,10 @@
-package testutils
+package test
 
 import (
 	"io"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -24,8 +25,16 @@ func ReadTestFile(path string, t *testing.T) io.Reader {
 		t.Fail()
 	}
 
-	t.Log("Bytes:", len(bytes))
-
 	file.Close()
 	return strings.NewReader(string(bytes))
+}
+
+/*
+	Checks equality of two objects via deep equals and fails the test if they dont match
+*/
+func AssertEquals(got, expected interface{}, t *testing.T) {
+	if !reflect.DeepEqual(got, expected) {
+		t.Log("Expected", expected, "instead of", got)
+		t.Fail()
+	}
 }
