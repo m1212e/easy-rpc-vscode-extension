@@ -1,21 +1,9 @@
 package main
 
-import (
-	"sync"
-
-	"fmt"
-	"os"
-)
-
-
+import "erpcLanguageServer/server"
 
 func main() {
-	fmt.Println("Starting Easy-RPC language server")
+	server := server.NewServer()
 
-	wg.Add(3)
-	go readerLoop()
-	go writerLoop()
-	go handlerLoop()
-
-	wg.Wait()
+	server.Run()
 }
