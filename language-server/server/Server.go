@@ -1,25 +1,30 @@
 package server
 
 import (
+	"crypto/rand"
+	"encoding/json"
 	"erpcLanguageServer/server/jsonrpc"
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type Server struct {
-	methods   map[string]func(request jsonrpc.Request) jsonrpc.Response
-	reader    *jsonrpc.Reader
-	writer    *jsonrpc.Writer
-	requests  chan jsonrpc.Request
-	responses chan jsonrpc.Response
-	wg        sync.WaitGroup
-	shutdown  bool
+	methods         map[string]func(request jsonrpc.Request) *jsonrpc.Response
+	ongoingRequests map[string]chan jsonrpc.Response
+	reader          *jsonrpc.Reader
+	writer          *jsonrpc.Writer
+	incoming        chan jsonrpc.Sendable
+	outgoing        chan jsonrpc.Sendable
+	wg              sync.WaitGroup
+	shutdown        bool
 }
 
 func NewServer() *Server {
 	s := &Server{}
-	s.methods = make(map[string]func(request jsonrpc.Request) jsonrpc.Response)
+	s.methods = make(map[string]func(request jsonrpc.Request) *jsonrpc.Response)
+	s.ongoingRequests = make(map[string]chan jsonrpc.Response)
 	return s
 }
 
@@ -28,8 +33,8 @@ func (server *Server) Run() {
 
 	server.reader = jsonrpc.NewReader(os.Stdin)
 	server.writer = jsonrpc.NewWriter(os.Stdout)
-	server.requests = make(chan jsonrpc.Request, 5)
-	server.responses = make(chan jsonrpc.Response, 5)
+	server.incoming = make(chan jsonrpc.Sendable, 5)
+	server.outgoing = make(chan jsonrpc.Sendable, 5)
 
 	server.wg.Add(3)
 	go server.readerLoop()
@@ -41,16 +46,16 @@ func (server *Server) Run() {
 func (server *Server) readerLoop() {
 	for {
 		if server.shutdown {
-			close(server.requests)
+			close(server.incoming)
 			break
 		}
 
-		request, err := server.reader.Next()
+		message, err := server.reader.Next()
 		if err != nil {
-			server.responses <- err.ToErrorResponse(nil)
+			server.outgoing <- err.ToErrorResponse(nil)
 		}
-		log.Println("Recieved request:", request.Method, "with ID:", request.ID)
-		server.requests <- request
+		log.Println("Recieved incoming:", message.SendableToString())
+		server.incoming <- message
 	}
 
 	server.wg.Done()
@@ -59,44 +64,129 @@ func (server *Server) readerLoop() {
 func (server *Server) writerLoop() {
 	for {
 		if server.shutdown {
-			close(server.responses)
+			close(server.outgoing)
 			break
 		}
-		response := <-server.responses
+		message := <-server.outgoing
 
-		// dont send notification answers
-		if response.ID == nil {
-			log.Println("Notification recieved.")
+		// dont send notification responses
+		if response, ok := message.(*jsonrpc.Response); ok && response.ID == nil {
 			continue
 		}
 
-		response.Jsonrpc = "2.0"
-		if err := server.writer.Write(response); err != nil {
-			log.Println("Errored response with ID:", response.ID)
-			server.responses <- err.ToErrorResponse(response.ID)
+		if err := server.writer.Write(message); err != nil {
+			log.Println("Outgoing message errored:" + message.SendableToString())
+			server.outgoing <- err.ToErrorResponse(message.GetID())
 			continue
 		}
-		log.Println("Sent response with ID:", response.ID)
+		log.Println("Sent message with ID:", message.GetID())
 	}
 
 	server.wg.Done()
 }
+
+//TODO refactor
 
 func (server *Server) handlerLoop() {
 	for {
 		if server.shutdown {
 			break
 		}
-		request := <-server.requests
-		f, ok := server.methods[request.Method]
-		if !ok {
-			server.responses <- jsonrpc.NewMethodNotFoundError("could not find the method "+request.Method, nil).ToErrorResponse(request.ID)
-			continue
-		}
+		message := <-server.incoming
 
-		server.responses <- f(request)
+		go func() {
+			if req, ok := message.(*jsonrpc.Request); ok {
+				f, ok := server.methods[req.Method]
+				if !ok {
+					log.Println("Could not find method:", req.Method)
+					server.outgoing <- jsonrpc.NewMethodNotFoundError("could not find the method "+req.Method, nil).ToErrorResponse(req.ID)
+					return
+				}
+
+				server.outgoing <- f(*req)
+				return
+			}
+
+			if res, ok := message.(*jsonrpc.Response); ok {
+				if id, ok := res.ID.(string); ok {
+					_, ok := server.ongoingRequests[id]
+					if ok {
+						server.ongoingRequests[id] <- *res
+					} else {
+						server.outgoing <- jsonrpc.NewInternalError("id not found, request might have timed out", nil).ToErrorResponse(res.ID)
+					}
+					return
+				}
+
+				server.outgoing <- jsonrpc.NewInternalError("invalid id for response, must be string type", nil).ToErrorResponse(res.ID)
+				return
+			}
+
+			server.outgoing <- jsonrpc.NewInternalError("invalid state, message must be request or response", nil).ToErrorResponse(nil)
+		}()
 	}
 	server.wg.Done()
+}
+
+/*
+	Sends a request to the server. Returns an error which may have occured. You do not need to send that error to the client,
+	this is done automatically. Times out after 5 seconds.
+*/
+func (server *Server) makeRequest(method string, params interface{}) (*jsonrpc.Response, *jsonrpc.JSONRPCError) {
+
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		e := jsonrpc.NewInternalError("Could not generate a request ID", err)
+		server.outgoing <- e.ToErrorResponse(nil)
+		return nil, e
+	}
+	id := string(b)
+
+	resolve := make(chan jsonrpc.Response)
+	server.ongoingRequests[id] = resolve
+	defer delete(server.ongoingRequests, id)
+
+	data, err := json.Marshal(params)
+	if err != nil {
+		e := jsonrpc.NewInternalError("Could not marshal parameters", err)
+		server.outgoing <- e.ToErrorResponse(nil)
+		return nil, e
+	}
+
+	server.outgoing <- &jsonrpc.Request{
+		Method: method,
+		Params: data,
+		ID:     id,
+	}
+
+	select {
+	case res := <-resolve:
+		return &res, nil
+	case <-time.After(5 * time.Second):
+		e := jsonrpc.NewInternalError("Request with id "+id+" timed out", nil)
+		server.outgoing <- e.ToErrorResponse(nil)
+		return nil, e
+	}
+}
+
+/*
+	Sends a notification to the server. Returns an error which may have occured. You do not need to send that error to the client,
+	this is done automatically.
+*/
+func (server *Server) sendNotification(method string, params interface{}) *jsonrpc.JSONRPCError {
+	data, err := json.Marshal(params)
+	if err != nil {
+		e := jsonrpc.NewInternalError("Could not marshal parameters", err)
+		server.outgoing <- e.ToErrorResponse(nil)
+		return e
+	}
+
+	server.outgoing <- &jsonrpc.Request{
+		Method: method,
+		Params: data,
+	}
+	return nil
 }
 
 func (server *Server) Shutdown() {

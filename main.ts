@@ -12,8 +12,6 @@ export function activate(context: ExtensionContext) {
     path.join("language-server", "erpcLanguageServer.exe")
   );
 
-  console.log(server);
-
   client = new LanguageClient(
     "Easy-RPC-Language-Server",
     "Easy-RPC-Language-Server",

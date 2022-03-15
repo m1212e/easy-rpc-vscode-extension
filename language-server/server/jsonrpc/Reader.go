@@ -23,19 +23,26 @@ func NewReader(reader io.Reader) *Reader {
 /*
 	Returns the next message
 */
-func (reader *Reader) Next() (Request, *JSONRPCError) {
+func (reader *Reader) Next() (Sendable, *JSONRPCError) {
 	raw, err := reader.readRawJsonMessage()
 	if err != nil {
-		return Request{}, err
+		return nil, err
 	}
 
 	var request Request
-	jsonError := json.Unmarshal(raw, &request)
-	if jsonError != nil {
-		return Request{}, NewInternalError("error while unmarshalling json request", jsonError)
+	var response Response
+	jsonErrorRequest := json.Unmarshal(raw, &request)
+	jsonErrorResponse := json.Unmarshal(raw, &response)
+
+	if jsonErrorRequest != nil && jsonErrorResponse != nil {
+		return nil, NewInternalError("error while unmarshalling json message", jsonErrorRequest)
 	}
 
-	return request, nil
+	if jsonErrorRequest != nil {
+		return &response, nil
+	} else {
+		return &request, nil
+	}
 }
 
 /*

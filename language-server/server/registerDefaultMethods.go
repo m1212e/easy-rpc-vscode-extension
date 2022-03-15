@@ -6,9 +6,9 @@ import (
 )
 
 func (server *Server) registerDefaultMethods() {
-	server.methods["exit"] = func(request jsonrpc.Request) jsonrpc.Response {
+	server.methods["exit"] = func(request jsonrpc.Request) *jsonrpc.Response {
 		server.Shutdown()
-		return jsonrpc.Response{}
+		return &jsonrpc.Response{}
 	}
 
 	_, exists := server.methods[initialize.Identifier()]

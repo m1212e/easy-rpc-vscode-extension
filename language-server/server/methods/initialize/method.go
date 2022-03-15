@@ -11,7 +11,5 @@ func Identifier() string {
 
 func DefaultImplementation(params Parameters) (Response, *jsonrpc.JSONRPCError) {
 	log.Println("Initialized Easy-RPC language server at", *params.RootPath)
-	return Response{
-		Capabilities: ServerCapabilities{},
-	}, nil
+	return Response{}, nil
 }

@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strconv"
 )
@@ -19,11 +20,16 @@ func NewWriter(writer io.Writer) *Writer {
 	return &ret
 }
 
-func (writer *Writer) Write(response Response) *JSONRPCError {
-	bytes, err := json.Marshal(response)
+func (writer *Writer) Write(message Sendable) *JSONRPCError {
+	message.SetJSONRPCVersion("2.0")
+	bytes, err := json.Marshal(message)
 	if err != nil {
 		return NewInternalError("could not marshal outgoing", err)
 	}
+
+	prefix := []byte(fmt.Sprintf("Content-Length: %d\r\n\r\n", len(bytes)))
+
+	bytes = append(prefix, bytes...)
 
 	amountWritten, err := writer.out.Write(bytes)
 	if err != nil {

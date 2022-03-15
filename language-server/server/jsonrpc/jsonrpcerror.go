@@ -18,8 +18,8 @@ func (err JSONRPCError) Error() string {
 /*
 	Converts this error to an error response which can be sent to the client
 */
-func (err JSONRPCError) ToErrorResponse(ID interface{}) Response {
-	return Response{
+func (err JSONRPCError) ToErrorResponse(ID interface{}) *Response {
+	return &Response{
 		Result: nil,
 		ID:     ID,
 		Error:  &err,
