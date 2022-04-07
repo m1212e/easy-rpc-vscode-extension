@@ -13,8 +13,8 @@ export function activate(context: ExtensionContext) {
   );
 
   client = new LanguageClient(
-    "Easy-RPC-Language-Server",
-    "Easy-RPC-Language-Server",
+    "easy-rpc-Language-Server",
+    "easy-rpc-Language-Server",
     createServer(server),
     {}
   );

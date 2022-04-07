@@ -17,7 +17,7 @@ func main() {
 	})
 
 	server.OnInitialized(func() *jsonrpc.JSONRPCError {
-		server.ShowMessage("Easy-RPC language server initialized successfully", showmessage.Info)
+		server.ShowMessage("easy-rpc language server initialized successfully", showmessage.Info)
 		return nil
 	})
 

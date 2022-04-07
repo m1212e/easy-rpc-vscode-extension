@@ -1,7 +1,7 @@
 {
   "name": "easy-rpc",
-  "displayName": "Easy-RPC",
-  "description": "Easy-RPC language support",
+  "displayName": "easy-rpc",
+  "description": "easy-rpc language support",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.64.0"
@@ -18,9 +18,9 @@
   "contributes": {
     "languages": [
       {
-        "id": "Easy-RPC",
+        "id": "easy-rpc",
         "aliases": [
-          "Easy-RPC",
+          "easy-rpc",
           "erpc"
         ],
         "extensions": [
@@ -31,20 +31,20 @@
     ],
     "grammars": [
       {
-        "language": "Easy-RPC",
+        "language": "easy-rpc",
         "scopeName": "source.erpc",
         "path": "./syntaxes/erpc.tmLanguage.json"
       }
     ],
     "snippets": [
       {
-        "language": "Easy-RPC",
+        "language": "easy-rpc",
         "path": "./snippets/erpc.json"
       }
     ]
   },
   "activationEvents": [
-    "onLanguage:Easy-RPC",
+    "onLanguage:easy-rpc",
     "workspaceContains:**/*.erpc"
   ],
   "devDependencies": {
