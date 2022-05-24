@@ -19,7 +19,7 @@
     },
     {
       "name": "entity.name.function.erpc",
-      "match": "\\b[A-Za-z0-9_]{1,}[\\s]{0,}\\("
+      "match": "(?<=\\s)(.*)(?=\\()"
     },
     {
       "include": "#identifiers"
