@@ -4,6 +4,8 @@ import { ExtensionContext } from "vscode";
 import { LanguageClient, StreamInfo } from "vscode-languageclient/node";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 
+//TODO: Goto ERPC definition inside TS files
+
 let client: LanguageClient;
 let p: ChildProcessWithoutNullStreams;
 
