@@ -8,10 +8,5 @@
     "prefix": ["function", "endpoint"],
     "body": ["/**\n This is an endpoint\n*/\n${1:role} ${2:name}($3) ${4:returnType} \n$0"],
     "description": "Create a new endpoint"
-  },
-  "Role": {
-    "prefix": "role",
-    "body": ["/**\n This is a role\n*/\nrole ${1:roleName} \n$0"],
-    "description": "Create a new role"
   }
 }

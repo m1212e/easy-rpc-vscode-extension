@@ -1,22 +1,19 @@
 import * as path from "path";
 import { ExtensionContext } from "vscode";
-
 import { LanguageClient, StreamInfo } from "vscode-languageclient/node";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-
-//TODO: Goto ERPC definition inside TS files
 
 let client: LanguageClient;
 let p: ChildProcessWithoutNullStreams;
 
 export function activate(context: ExtensionContext) {
   const server = context.asAbsolutePath(
-    path.join("language-server", "erpcLanguageServer.exe")
+    path.join("language-server", "easy-rpc.exe")
   );
 
   client = new LanguageClient(
-    "easy-rpc-Language-Server",
-    "easy-rpc-Language-Server",
+    "easy-rpc-language-server",
+    "easy-rpc-language-server",
     createServer(server),
     {}
   );
@@ -33,7 +30,7 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 function createServer(executeablePath: string) {
-  p = spawn(executeablePath);
+  p = spawn(executeablePath, ["-ls"]);
 
   const setDetatchedTrue = () => {
     info.detached = true;
