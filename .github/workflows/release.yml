@@ -24,3 +24,4 @@ jobs:
         with:
           pat: ${{ secrets.VSCODE_MARKETPLACE_ACCESSTOKEN }}
           registryUrl: https://marketplace.visualstudio.com
+          packagePath: ./build
