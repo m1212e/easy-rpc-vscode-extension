@@ -15,4 +15,19 @@ require('esbuild').build({
     target: "node14"
 }).catch(() => process.exit(1));
 
-fs.copyFileSync("./package.json", "./build/package.json");
+function copyToBuild(name) {
+    fs.cpSync(`./${name}`, `./build/${name}`, {recursive: true})
+}
+
+const include = [
+    "snippets",
+    "syntaxes",
+    "CHANGELOG.md",
+    "language-configuration.json",
+    "LICENSE.txt",
+    "package.json",
+    "package-lock.json",
+    "README.md",
+]
+
+include.forEach(name => copyToBuild(name))
