@@ -14,13 +14,9 @@ jobs:
       - run: |
          npm ci
          npm run build
+         cd build
+         npx vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_ACCESSTOKEN }}
       # - name: Publish to Open VSX Registry
       #   uses: HaaLeo/publish-vscode-extension@v1
       #   with:
       #     pat: ${{ secrets.OPEN_VSX_TOKEN }}
-      - name: Publish to Visual Studio Marketplace
-        uses: HaaLeo/publish-vscode-extension@v1
-        with:
-          pat: ${{ secrets.VSCODE_MARKETPLACE_ACCESSTOKEN }}
-          registryUrl: https://marketplace.visualstudio.com
-          packagePath: ./build
