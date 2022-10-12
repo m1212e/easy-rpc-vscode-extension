@@ -1,22 +1,26 @@
-import * as path from "path";
-import { ExtensionContext, window } from "vscode";
-import { LanguageClient, StreamInfo } from "vscode-languageclient/node";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { ExtensionContext, window, workspace } from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
+import { ChildProcessWithoutNullStreams } from "child_process";
+import { getBinary } from "./downloadBinary";
 
 let client: LanguageClient;
 let p: ChildProcessWithoutNullStreams;
 
-export function activate(context: ExtensionContext) {
-  const serverCommand = context.asAbsolutePath(
-    path.join("language-server", "easy-rpc.exe")
-  );
+export async function activate(context: ExtensionContext) {
+  if (!workspace.workspaceFolders) {
+    throw new Error("Workspace folders undefined. Can't activate.");
+  }
+
+  const path = workspace.workspaceFolders[0].uri.fsPath.replace(/\s/g, "");
+
+  const binaryPath = await getBinary(context.globalStorageUri.fsPath, path);
 
   client = new LanguageClient(
     "easy-rpc-language-server",
     "easy-rpc-language-server",
     {
-      command: serverCommand,
-      args: ["-ls"],
+      command: binaryPath,
+      args: ["-ls", "-p", path],
     },
     {
       outputChannel: window.createOutputChannel("easy-rpc-language-server"),
@@ -32,33 +36,4 @@ export function deactivate(): Thenable<void> | undefined {
   }
   p.removeAllListeners();
   return client.stop();
-}
-
-function createServer(executeablePath: string) {
-  p = spawn(executeablePath, ["-ls"], {
-    env: { ...process.env, RUST_BACKTRACE: "1" },
-  });
-
-  p.stdout.addListener("data", (data: Buffer) => {
-    console.log("<-\n" + data.toString() + "\n");
-  });
-  p.stderr.addListener("data", (data: Buffer) => {
-    console.error("<-err\n" + data.toString() + "\n");
-  });
-
-  const setDetatchedTrue = () => {
-    info.detached = true;
-  };
-
-  p.addListener("close", setDetatchedTrue);
-  p.addListener("error", setDetatchedTrue);
-  p.addListener("disconnect", setDetatchedTrue);
-  p.addListener("exit", setDetatchedTrue);
-
-  const info: StreamInfo = {
-    writer: p.stdin,
-    reader: p.stdout,
-  };
-
-  return async () => info;
 }
