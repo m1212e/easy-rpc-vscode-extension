@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: 16
       - name: Build and publish
-      - run: |
+        run: |
          npm ci
          npm run build -- -release-version ${{github.ref_name}}
          cd build
