@@ -33,7 +33,7 @@ function copyToBuild(name) {
 include.forEach(name => copyToBuild(name));
 
 const pkgjson = JSON.parse(fs.readFileSync("./build/package.json"));
-const index = process.argv.findIndex(e => e == "--version");
+const index = process.argv.findIndex(e => e == "-release-version");
 if (index != -1) {
     pkgjson.version = process.argv[index + 1]
 }

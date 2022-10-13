@@ -11,9 +11,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
+      - name: Build and publish
       - run: |
          npm ci
-         npm run build --version ${{github.ref_name}}
+         npm run build -- -release-version ${{github.ref_name}}
          cd build
          npx vsce publish --no-dependencies -p ${{ secrets.VSCODE_MARKETPLACE_ACCESSTOKEN }}
       # - name: Publish to Open VSX Registry
