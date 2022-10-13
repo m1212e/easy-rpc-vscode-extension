@@ -13,7 +13,7 @@ jobs:
           node-version: 16
       - run: |
          npm ci
-         npm run build
+         npm run build --version ${{github.ref_name}}
          cd build
          npx vsce publish --no-dependencies -p ${{ secrets.VSCODE_MARKETPLACE_ACCESSTOKEN }}
       # - name: Publish to Open VSX Registry

@@ -2,7 +2,6 @@
   "name": "easy-rpc",
   "displayName": "easy-rpc",
   "description": "easy-rpc language support",
-  "version": "0.0.1",
   "repository": "https://github.com/m1212e/easy-rpc-vscode-extension",
   "publisher": "easy-rpc",
   "engines": {

@@ -33,5 +33,9 @@ function copyToBuild(name) {
 include.forEach(name => copyToBuild(name));
 
 const pkgjson = JSON.parse(fs.readFileSync("./build/package.json"));
+const index = process.argv.findIndex(e => e == "--version");
+if (index != -1) {
+    pkgjson.version = process.argv[index + 1]
+}
 pkgjson.main = "main.js"
 fs.writeFileSync("./build/package.json", JSON.stringify(pkgjson))
