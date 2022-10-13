@@ -11,16 +11,16 @@ export async function activate(context: ExtensionContext) {
     throw new Error("Workspace folders undefined. Can't activate.");
   }
 
-  const path = workspace.workspaceFolders[0].uri.fsPath.replace(/\s/g, "");
+  const workspacePath = workspace.workspaceFolders[0].uri.fsPath.replace(/\s/g, "");
 
-  const binaryPath = await getBinary(context.globalStorageUri.fsPath, path);
+  const binaryPath = await getBinary(context.globalStorageUri.fsPath, workspacePath);
 
   client = new LanguageClient(
     "easy-rpc-language-server",
     "easy-rpc-language-server",
     {
       command: binaryPath,
-      args: ["-ls", "-p", path],
+      args: ["-ls", "-p", workspacePath],
     },
     {
       outputChannel: window.createOutputChannel("easy-rpc-language-server"),

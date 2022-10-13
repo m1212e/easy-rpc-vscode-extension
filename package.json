@@ -15,7 +15,7 @@
   "scripts": {
     "build": "node ./build.js"
   },
-  "main": "main.js",
+  "main": "build/main.js",
   "contributes": {
     "languages": [
       {

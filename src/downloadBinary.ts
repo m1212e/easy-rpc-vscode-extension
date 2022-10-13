@@ -29,10 +29,23 @@ export async function getBinary(
   const erpcStorageDirectory = join(globalStoragePath, "erpc");
   const erpcBinaryLocation = join(erpcStorageDirectory, binaryName);
 
+  // check if the workdir contains a matching executeable, if so use it
+  // this is useful for development
+  if (existsSync(join(workspace, "easy-rpc"))) {
+    return join(workspace, "easy-rpc");
+  }
+
+  // orn on win
+  if (existsSync(join(workspace, "easy-rpc.exe"))) {
+    return join(workspace, "easy-rpc.exe");
+  }
+
+  // or with binary name
   if (existsSync(join(workspace, binaryName))) {
     return join(workspace, binaryName);
   }
 
+  // check if the correct version is installed
   if (
     existsSync(erpcBinaryLocation) &&
     existsSync(join(erpcStorageDirectory, "version")) &&
@@ -42,11 +55,11 @@ export async function getBinary(
     return erpcBinaryLocation;
   }
 
-  window.showInformationMessage("A new easy-rpc version has been downloaded")
-
+  // delete all contents of the storage dir and recreate
   rmSync(erpcStorageDirectory, { recursive: true, force: true });
   mkdirSync(erpcStorageDirectory, { recursive: true });
 
+  // download the matching version
   await new Promise<void>((resolve) => {
     https.get(
       `https://github.com/m1212e/easy-rpc/releases/download/${ERPC_VERSION}/${binaryName}`,
@@ -67,7 +80,10 @@ export async function getBinary(
     );
   });
 
+  // svae the downloaded version in a version file
   writeFileSync(join(erpcStorageDirectory, "version"), ERPC_VERSION);
+
+  window.showInformationMessage("A new easy-rpc version has been downloaded");
   return erpcBinaryLocation;
 }
 

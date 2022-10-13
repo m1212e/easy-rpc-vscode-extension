@@ -10,14 +10,11 @@
       "preLaunchTask": {
         "type": "npm",
         "script": "build",
-        "group": "build",
-        "problemMatcher": [],
-        "label": "npm: build",
-        "detail": "esbuild main.ts --bundle --platform=node --target=node16.12 --outfile=build/out.js --external:vscode"
       },
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"]
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      
     }
   ]
 }

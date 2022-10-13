@@ -7,7 +7,6 @@
       "group": "build",
       "problemMatcher": [],
       "label": "npm: build",
-      "detail": "esbuild main.ts --bundle --platform=node --target=node16.12 --outfile=build/out.js --external:vscode"
     }
   ]
 }

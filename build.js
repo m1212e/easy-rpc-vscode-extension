@@ -15,10 +15,7 @@ require('esbuild').build({
     target: "node14"
 }).catch(() => process.exit(1));
 
-function copyToBuild(name) {
-    fs.cpSync(`./${name}`, `./build/${name}`, {recursive: true})
-}
-
+// files/dirs on root level which should be included inside the build
 const include = [
     "snippets",
     "syntaxes",
@@ -28,6 +25,13 @@ const include = [
     "package.json",
     "package-lock.json",
     "README.md",
-]
+];
 
-include.forEach(name => copyToBuild(name))
+function copyToBuild(name) {
+    fs.cpSync(`./${name}`, `./build/${name}`, {recursive: true});
+}
+include.forEach(name => copyToBuild(name));
+
+const pkgjson = JSON.parse(fs.readFileSync("./build/package.json"));
+pkgjson.main = "main.js"
+fs.writeFileSync("./build/package.json", JSON.stringify(pkgjson))
