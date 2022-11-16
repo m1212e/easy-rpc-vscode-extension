@@ -13,7 +13,7 @@ import { https } from "follow-redirects";
 import { join } from "path";
 const { platform, arch } = process;
 
-const ERPC_VERSION = "0.0.0-alpha.2";
+const ERPC_VERSION = "0.0.0-alpha.3";
 
 /**
  * Ensures the presence of the correct erpc binary on the system and returns its location as string
