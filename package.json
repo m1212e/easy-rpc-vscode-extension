@@ -45,6 +45,8 @@
   },
   "activationEvents": [
     "onLanguage:easy-rpc",
+    "workspaceContains:**/erpc.json",
+    "workspaceContains:**/roles.json",
     "workspaceContains:**/*.erpc"
   ],
   "devDependencies": {
