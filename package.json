@@ -4,6 +4,7 @@
   "description": "easy-rpc language support",
   "repository": "https://github.com/m1212e/easy-rpc-vscode-extension",
   "publisher": "easy-rpc",
+  "version": "0.0.0",
   "engines": {
     "vscode": "^1.64.0"
   },
