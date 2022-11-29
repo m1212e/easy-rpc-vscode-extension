@@ -13,7 +13,7 @@ import { https } from "follow-redirects";
 import { join } from "path";
 const { platform, arch } = process;
 
-const ERPC_VERSION = "0.0.0-alpha.3";
+const ERPC_VERSION = "0.0.0-alpha.5";
 
 /**
  * Ensures the presence of the correct erpc binary on the system and returns its location as string
@@ -32,16 +32,19 @@ export async function getBinary(
   // check if the workdir contains a matching executeable, if so use it
   // this is useful for development
   if (existsSync(join(workspace, "easy-rpc"))) {
+    window.showInformationMessage("Using workspace easy-rpc binary");
     return join(workspace, "easy-rpc");
   }
 
-  // orn on win
+  // or on on win
   if (existsSync(join(workspace, "easy-rpc.exe"))) {
+    window.showInformationMessage("Using workspace easy-rpc.exe binary");
     return join(workspace, "easy-rpc.exe");
   }
 
   // or with binary name
   if (existsSync(join(workspace, binaryName))) {
+    window.showInformationMessage("Using workspace " + binaryName + " binary");
     return join(workspace, binaryName);
   }
 
